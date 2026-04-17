@@ -83,9 +83,9 @@ img {
 
 .site-header {
   display: grid;
-  grid-template-columns: auto minmax(280px, 420px) auto;
-  align-items: center;
-  gap: 22px;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 18px;
   padding-top: 24px;
   padding-bottom: 24px;
   border-bottom: 1px solid var(--line);
@@ -133,9 +133,9 @@ img {
 
 .header-scene {
   position: relative;
-  justify-self: center;
-  width: min(100%, 420px);
-  padding: 14px 16px 12px;
+  justify-self: stretch;
+  width: 100%;
+  padding: 18px 18px 14px;
   border-radius: 26px;
   border: 1px solid rgba(255, 227, 181, 0.16);
   background:
@@ -149,8 +149,8 @@ img {
 .header-scene::before {
   content: "";
   position: absolute;
-  inset: auto 24px 10px 24px;
-  height: 32px;
+  inset: auto 42px 12px 42px;
+  height: 40px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.22);
   filter: blur(14px);
@@ -172,7 +172,7 @@ img {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .header-scene-labels span {
@@ -184,7 +184,7 @@ img {
   background: rgba(255, 255, 255, 0.06);
   color: var(--accent-soft);
   font-family: var(--display);
-  font-size: 0.92rem;
+  font-size: 1rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -193,8 +193,8 @@ img {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-self: end;
-  justify-content: flex-end;
+  justify-self: stretch;
+  justify-content: center;
 }
 
 .site-nav a {
@@ -735,21 +735,17 @@ h1 {
 }
 
 @media (max-width: 1024px) {
-  .site-header {
-    grid-template-columns: 1fr;
-  }
-
   .header-scene,
   .site-nav {
     justify-self: stretch;
   }
 
   .header-scene {
-    width: min(100%, 520px);
+    width: 100%;
   }
 
   .site-nav {
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   .hero,
@@ -813,7 +809,7 @@ h1 {
 
   .header-scene {
     width: 100%;
-    padding-inline: 10px;
+    padding: 12px 10px 10px;
   }
 
   .header-scene-labels {
@@ -821,7 +817,7 @@ h1 {
   }
 
   .header-scene-labels span {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     padding-inline: 6px;
   }
 
@@ -968,9 +964,16 @@ h1 {
 }
 
 .snake-board {
+  --snake-mug-left: 26px;
+  --snake-mug-right: 94px;
+  --snake-foam-top: -16px;
+  --snake-foam-height: 74px;
   justify-self: center;
   width: min(100%, 540px);
   padding: 26px 78px 44px 26px;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .snake-promo {
@@ -1041,17 +1044,22 @@ h1 {
 .snake-board::before {
   content: "";
   position: absolute;
-  left: 22px;
-  right: 98px;
-  top: -6px;
-  height: 56px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fffdf4 0%, #ffeec3 100%);
+  left: var(--snake-mug-left);
+  right: var(--snake-mug-right);
+  top: var(--snake-foam-top);
+  height: var(--snake-foam-height);
+  border-radius: 999px 999px 28px 28px;
+  background:
+    radial-gradient(circle at 8% 72%, #fffdf2 0 22px, transparent 23px),
+    radial-gradient(circle at 21% 42%, #fffdf2 0 29px, transparent 30px),
+    radial-gradient(circle at 38% 22%, #fffef5 0 33px, transparent 34px),
+    radial-gradient(circle at 56% 16%, #fffef7 0 31px, transparent 32px),
+    radial-gradient(circle at 73% 28%, #fffdf2 0 29px, transparent 30px),
+    radial-gradient(circle at 90% 64%, #fffcef 0 21px, transparent 22px),
+    linear-gradient(180deg, #fffef8 0%, #fff6df 56%, #f2dfb2 100%);
   box-shadow:
-    44px 8px 0 0 #fff8de,
-    108px -2px 0 6px #fff8de,
-    174px 6px 0 0 #fff9e5;
-  filter: drop-shadow(0 12px 16px rgba(255, 247, 220, 0.14));
+    0 12px 18px rgba(255, 247, 220, 0.12),
+    inset 0 -4px 10px rgba(227, 202, 145, 0.28);
   z-index: 3;
   pointer-events: none;
 }
@@ -1089,6 +1097,7 @@ h1 {
     inset 0 -36px 58px rgba(112, 40, 0, 0.25),
     0 34px 62px rgba(0, 0, 0, 0.3);
   outline: none;
+  touch-action: none;
 }
 
 #snakeCanvas:focus-visible {
@@ -1109,6 +1118,7 @@ h1 {
   }
 
   .snake-board {
+    --snake-mug-right: 56px;
     width: min(100%, 500px);
     padding-right: 56px;
   }
@@ -1137,19 +1147,16 @@ h1 {
   }
 
   .snake-board {
+    --snake-mug-left: 14px;
+    --snake-mug-right: 34px;
+    --snake-foam-top: -12px;
+    --snake-foam-height: 62px;
     width: 100%;
     padding: 20px 34px 30px 14px;
   }
 
   .snake-board::before {
-    left: 14px;
-    right: 54px;
-    top: -2px;
-    height: 42px;
-    box-shadow:
-      28px 6px 0 0 #fff8de,
-      76px -2px 0 5px #fff8de,
-      122px 4px 0 0 #fff9e5;
+    border-radius: 999px 999px 22px 22px;
   }
 
   .snake-board::after {

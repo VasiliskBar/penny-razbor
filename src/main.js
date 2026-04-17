@@ -21,8 +21,8 @@ app.innerHTML = `
         <canvas
           id="headerPixelCanvas"
           class="header-pixel-canvas"
-          width="192"
-          height="88"
+          width="720"
+          height="176"
         ></canvas>
         <div class="header-scene-labels" aria-hidden="true">
           <span>Егор</span>
@@ -261,7 +261,7 @@ app.innerHTML = `
           </div>
 
           <div class="snake-hints" aria-label="Подсказки по игре">
-            <span class="snake-hint">Стрелки для движения</span>
+            <span class="snake-hint">Стрелки и свайпы для движения</span>
             <span class="snake-hint">Поймал каплю - вырос</span>
             <span class="snake-hint">Столкновение - рестарт</span>
           </div>
@@ -327,51 +327,89 @@ if (headerPixelCanvas instanceof HTMLCanvasElement) {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     );
+    const pixelSize = 4;
+    const sceneWidth = headerPixelCanvas.width / pixelSize;
+    const sceneHeight = headerPixelCanvas.height / pixelSize;
+    const signGlyphs = {
+      B: [
+        "11110",
+        "10001",
+        "11110",
+        "10001",
+        "10001",
+        "11110",
+      ],
+      A: [
+        "01110",
+        "10001",
+        "10001",
+        "11111",
+        "10001",
+        "10001",
+      ],
+      R: [
+        "11110",
+        "10001",
+        "10001",
+        "11110",
+        "10100",
+        "10010",
+      ],
+    };
     const patrons = [
       {
-        x: 40,
-        shirt: "#7a3b17",
-        shirtShade: "#4f220d",
-        skin: "#f1c08d",
-        hair: "#2a150b",
-        mugTargetX: 3,
-        mugTargetY: 28,
-        cycle: 2500,
-        offset: 0,
-        blinkCycle: 2600,
-        blinkOffset: 180,
-        headLift: 2,
-        tapCycle: 2100,
+        x: 34,
+        skin: "#f1c08c",
+        hair: "#26130b",
+        shirt: "#8b461f",
+        shirtShade: "#5f2b12",
+        beard: true,
+        moustache: false,
+        cap: false,
+        mouthOffsetX: 0,
+        mouthOffsetY: 0,
+        drinkWindow: [0.04, 0.09, 0.13, 0.18],
+        toastOneTarget: { x: 70, y: 18 },
+        toastTwoTarget: null,
+        blinkOffset: 0,
+        idleOffset: 0.4,
+        tapOffset: 0.2,
       },
       {
-        x: 96,
-        shirt: "#486835",
-        shirtShade: "#2d4321",
-        skin: "#edbe90",
-        hair: "#5e3413",
-        mugTargetX: 6,
-        mugTargetY: 27,
-        cycle: 2900,
-        offset: 760,
-        blinkCycle: 3100,
-        blinkOffset: 420,
-        headLift: 3,
-        tapCycle: 1700,
+        x: 90,
+        skin: "#edbc92",
+        hair: "#6a3916",
+        shirt: "#496b38",
+        shirtShade: "#2f4524",
+        beard: false,
+        moustache: true,
+        cap: false,
+        mouthOffsetX: 1,
+        mouthOffsetY: -1,
+        drinkWindow: [0.22, 0.27, 0.31, 0.37],
+        toastOneTarget: { x: 78, y: 17 },
+        toastTwoTarget: { x: 104, y: 17 },
+        blinkOffset: 0.9,
+        idleOffset: 1.2,
+        tapOffset: 1.1,
       },
       {
-        x: 152,
-        shirt: "#35588a",
-        shirtShade: "#213a5c",
-        skin: "#efbf95",
-        hair: "#1a2a3d",
-        mugTargetX: 5,
-        mugTargetY: 26,
-        cycle: 3300,
-        offset: 1460,
-        blinkCycle: 2800,
-        blinkOffset: 920,
-        headLift: 2,
-        tapCycle: 2400,
+        x: 146,
+        skin: "#efc198",
+        hair: "#20324d",
+        shirt: "#3a5f93",
+        shirtShade: "#243d5c",
+        beard: false,
+        moustache: false,
+        cap: true,
+        mouthOffsetX: 1,
+        mouthOffsetY: -1,
+        drinkWindow: [0.41, 0.46, 0.5, 0.56],
+        toastOneTarget: null,
+        toastTwoTarget: { x: 112, y: 18 },
+        blinkOffset: 1.6,
+        idleOffset: 2.1,
+        tapOffset: 1.7,
       },
     ];
 
@@ -392,12 +430,33 @@ if (headerPixelCanvas instanceof HTMLCanvasElement) {
       return value * value * (3 - 2 * value);
     }
 
-    function drawPixelRect(x, y, width, height, color) {
-      headerContext.fillStyle = color;
-      headerContext.fillRect(Math.round(x), Math.round(y), width, height);
+    function segment(progress, start, peakStart, peakEnd, finish) {
+      if (progress <= start || progress >= finish) {
+        return 0;
+      }
+
+      if (progress < peakStart) {
+        return easeInOut((progress - start) / (peakStart - start));
+      }
+
+      if (progress <= peakEnd) {
+        return 1;
+      }
+
+      return 1 - easeInOut((progress - peakEnd) / (finish - peakEnd));
     }
 
-    function drawPixelLine(x1, y1, x2, y2, color, size = 1) {
+    function px(x, y, width, height, color) {
+      headerContext.fillStyle = color;
+      headerContext.fillRect(
+        Math.round(x * pixelSize),
+        Math.round(y * pixelSize),
+        Math.round(width * pixelSize),
+        Math.round(height * pixelSize),
+      );
+    }
+
+    function line(x1, y1, x2, y2, color, size = 1) {
       let currentX = Math.round(x1);
       let currentY = Math.round(y1);
       const targetX = Math.round(x2);
@@ -409,7 +468,7 @@ if (headerPixelCanvas instanceof HTMLCanvasElement) {
       let error = deltaX - deltaY;
 
       while (true) {
-        drawPixelRect(currentX, currentY, size, size, color);
+        px(currentX, currentY, size, size, color);
 
         if (currentX === targetX && currentY === targetY) {
           break;
@@ -429,144 +488,278 @@ if (headerPixelCanvas instanceof HTMLCanvasElement) {
       }
     }
 
-    function getLift(progress) {
-      if (progress < 0.16 || progress > 0.9) {
-        return 0;
+    function drawGlyph(letter, startX, startY, color) {
+      const glyph = signGlyphs[letter];
+
+      if (!glyph) {
+        return;
       }
 
-      if (progress < 0.34) {
-        return easeInOut((progress - 0.16) / 0.18);
-      }
-
-      if (progress < 0.54) {
-        return 1;
-      }
-
-      return 1 - easeInOut((progress - 0.54) / 0.36);
+      glyph.forEach((row, rowIndex) => {
+        [...row].forEach((cell, cellIndex) => {
+          if (cell === "1") {
+            px(startX + cellIndex, startY + rowIndex, 1, 1, color);
+          }
+        });
+      });
     }
 
-    function drawBackdrop(time) {
-      const width = headerPixelCanvas.width;
-      const height = headerPixelCanvas.height;
-
-      drawPixelRect(0, 0, width, height, "#1b0c06");
-      drawPixelRect(0, 6, width, 20, "#2c1208");
-      drawPixelRect(0, 26, width, 18, "#241008");
-
-      const neonShift = prefersReducedMotion.matches
+    function drawSign(time) {
+      const signX = 61;
+      const signY = 3;
+      const signWidth = 58;
+      const signHeight = 10;
+      const bulbs = [];
+      const bulbPhase = prefersReducedMotion.matches
         ? 0
-        : Math.round(Math.sin(time / 320) * 2);
+        : Math.floor(time / 110) % 18;
+      const neonGlow = prefersReducedMotion.matches
+        ? "#ffd972"
+        : Math.sin(time / 180) > 0.15
+          ? "#ffe89a"
+          : "#ffbf41";
 
-      drawPixelRect(16, 12, 44, 2, "#5f2d12");
-      drawPixelRect(16, 14, 44, 1, "#ffd978");
-      drawPixelRect(136, 12, 40, 2, "#5f2d12");
-      drawPixelRect(136, 14, 40, 1, "#ffb54a");
+      px(signX, signY, signWidth, signHeight, "#2d1209");
+      px(signX + 1, signY + 1, signWidth - 2, signHeight - 2, "#412014");
 
-      drawPixelRect(20, 18 + neonShift, 4, 8, "#7dc59f");
-      drawPixelRect(28, 16, 5, 10, "#b96f39");
-      drawPixelRect(38, 19 - neonShift, 4, 7, "#84a4d8");
-      drawPixelRect(142, 17, 4, 9, "#cf8f41");
-      drawPixelRect(150, 19 + neonShift, 5, 7, "#6db0b6");
-      drawPixelRect(160, 16, 4, 10, "#be655e");
+      for (let x = signX + 3; x <= signX + signWidth - 4; x += 4) {
+        bulbs.push({ x, y: signY + 1 });
+        bulbs.push({ x, y: signY + signHeight - 2 });
+      }
 
-      drawPixelRect(0, 44, width, 8, "#8a3d12");
-      drawPixelRect(0, 52, width, 4, "#ffcb63");
-      drawPixelRect(0, 56, width, 24, "#6d2d0f");
-      drawPixelRect(0, 80, width, 8, "#4a1b0a");
+      for (let y = signY + 3; y <= signY + signHeight - 4; y += 3) {
+        bulbs.push({ x: signX + 1, y });
+        bulbs.push({ x: signX + signWidth - 2, y });
+      }
 
-      drawPixelRect(0, 56, width, 1, "rgba(255, 245, 210, 0.35)");
-      drawPixelRect(0, 68, width, 1, "rgba(255, 180, 82, 0.12)");
+      bulbs.forEach((bulb, index) => {
+        const isLit = index % 18 === bulbPhase || (index + 5) % 18 === bulbPhase;
+        px(bulb.x, bulb.y, 1, 1, isLit ? "#ffe08e" : "#8a4822");
+      });
 
-      for (let index = 0; index < width; index += 12) {
-        drawPixelRect(index, 82, 6, 1, "rgba(255, 212, 140, 0.08)");
+      drawGlyph("B", signX + 15, signY + 2, neonGlow);
+      drawGlyph("A", signX + 23, signY + 2, neonGlow);
+      drawGlyph("R", signX + 31, signY + 2, neonGlow);
+
+      const arrowOffset = prefersReducedMotion.matches
+        ? 0
+        : Math.floor((time / 120) % 4);
+
+      px(signX + 44, signY + 4, 1, 1, "#ffcf66");
+      px(signX + 45, signY + 4, 1, 1, "#ffcf66");
+      px(signX + 46, signY + 4, 1, 1, "#ffcf66");
+      px(signX + 47, signY + 3 + arrowOffset % 2, 1, 1, "#ffcf66");
+      px(signX + 47, signY + 4, 1, 1, "#ffcf66");
+      px(signX + 47, signY + 5 - (arrowOffset % 2), 1, 1, "#ffcf66");
+    }
+
+    function drawBackWall(time) {
+      px(0, 0, sceneWidth, sceneHeight, "#170904");
+      px(0, 0, sceneWidth, 11, "#1f0d06");
+      px(0, 11, sceneWidth, 8, "#271108");
+      px(0, 19, sceneWidth, 8, "#1f0d06");
+
+      px(10, 12, 38, 1, "#6d3313");
+      px(132, 12, 38, 1, "#6d3313");
+      px(18, 8, 4, 4, "#9cc6a1");
+      px(26, 7, 5, 5, "#b87038");
+      px(36, 8, 4, 4, "#7ea7da");
+      px(138, 7, 4, 5, "#ba7a35");
+      px(146, 8, 5, 4, "#6db5ba");
+      px(156, 7, 4, 5, "#c46f68");
+
+      drawSign(time);
+
+      for (let x = 0; x < sceneWidth; x += 10) {
+        px(x, 24, 4, 1, "rgba(255, 216, 142, 0.03)");
       }
     }
 
-    function drawBeerMug(x, y, tiltSeed) {
-      const foamShift = prefersReducedMotion.matches
-        ? 0
-        : Math.round(Math.sin(tiltSeed / 140) * 1);
+    function drawBarForeground() {
+      px(0, 28, sceneWidth, 2, "#ffca5c");
+      px(0, 30, sceneWidth, 2, "#8f4215");
+      px(0, 32, sceneWidth, 10, "#6b2b0e");
+      px(0, 42, sceneWidth, 2, "#451909");
 
-      drawPixelRect(x, y, 6, 7, "#ffbf3c");
-      drawPixelRect(x + 1, y + 1, 4, 5, "#ffd56e");
-      drawPixelRect(x, y - 2, 6, 2, "#fff7d6");
-      drawPixelRect(x + 6, y + 1, 1, 4, "#f8e0a3");
-      drawPixelRect(x + 7, y + 2, 1, 2, "#f8e0a3");
-      drawPixelRect(x + 1, y - 3 + foamShift, 1, 1, "#fffdf1");
-      drawPixelRect(x + 4, y - 4 - foamShift, 1, 1, "#fffdf1");
+      for (let x = 9; x < sceneWidth; x += 26) {
+        px(x, 33, 12, 1, "rgba(255, 220, 150, 0.12)");
+        px(x + 6, 32, 1, 8, "rgba(59, 22, 8, 0.26)");
+      }
+
+      px(12, 39, sceneWidth - 24, 1, "#c3812d");
     }
 
-    function drawPatron(patron, time) {
-      const cycleProgress = prefersReducedMotion.matches
-        ? 0.24
-        : ((time + patron.offset) % patron.cycle) / patron.cycle;
-      const blinkProgress = prefersReducedMotion.matches
+    function drawStool(centerX) {
+      px(centerX - 6, 38, 12, 2, "#4b220e");
+      px(centerX - 4, 40, 2, 4, "#32150a");
+      px(centerX + 2, 40, 2, 4, "#32150a");
+    }
+
+    function drawBeerMug(x, y, time, sparkle = 0) {
+      const foamBob = prefersReducedMotion.matches
         ? 0
-        : ((time + patron.blinkOffset) % patron.blinkCycle) / patron.blinkCycle;
-      const lift = getLift(cycleProgress);
-      const easedLift = easeInOut(lift);
+        : Math.round(Math.sin(time / 150) * 1);
+
+      px(x, y, 6, 7, "#ffbf36");
+      px(x + 1, y + 1, 4, 5, "#ffd970");
+      px(x, y - 2, 6, 2, "#fff7da");
+      px(x + 6, y + 1, 1, 4, "#f2e1ab");
+      px(x + 7, y + 2, 1, 2, "#f2e1ab");
+      px(x + 1, y - 3 + foamBob, 1, 1, "#fffdf3");
+      px(x + 4, y - 4 - foamBob, 1, 1, "#fffdf3");
+
+      if (sparkle > 0.88) {
+        px(x + 2, y - 5, 1, 1, "#fffef2");
+      }
+    }
+
+    function getSceneProgress(time) {
+      if (prefersReducedMotion.matches) {
+        return 0.12;
+      }
+
+      return ((time % 14000) + 14000) % 14000 / 14000;
+    }
+
+    function getPatronAction(index, progress, patron) {
+      const rest = {
+        x: patron.x + 7,
+        y: 22,
+      };
+      const mouth = {
+        x: patron.x + patron.mouthOffsetX,
+        y: 15 + patron.mouthOffsetY,
+      };
+      const drinkLift = segment(progress, ...patron.drinkWindow);
+      let mugX = lerp(rest.x, mouth.x, drinkLift);
+      let mugY = lerp(rest.y, mouth.y, drinkLift);
+      let lean = drinkLift;
+      let clink = 0;
+
+      const toastOne = patron.toastOneTarget
+        ? segment(progress, 0.58, 0.64, 0.68, 0.75)
+        : 0;
+      const toastTwo = patron.toastTwoTarget
+        ? segment(progress, 0.79, 0.85, 0.89, 0.96)
+        : 0;
+
+      if (toastOne > 0) {
+        mugX = lerp(rest.x, patron.toastOneTarget.x, toastOne);
+        mugY = lerp(rest.y, patron.toastOneTarget.y, toastOne);
+        lean = Math.max(lean, toastOne);
+        clink = toastOne;
+      }
+
+      if (toastTwo > 0) {
+        mugX = lerp(rest.x, patron.toastTwoTarget.x, toastTwo);
+        mugY = lerp(rest.y, patron.toastTwoTarget.y, toastTwo);
+        lean = Math.max(lean, toastTwo);
+        clink = toastTwo;
+      }
+
+      return {
+        mugX,
+        mugY,
+        lean,
+        clink,
+      };
+    }
+
+    function drawPatron(patron, index, time, progress) {
+      const action = getPatronAction(index, progress, patron);
       const idleBob = prefersReducedMotion.matches
         ? 0
-        : Math.sin((time + patron.offset) / 320) * 0.7;
-      const headOffsetY = Math.round(idleBob - patron.headLift * easedLift);
-      const tapping = prefersReducedMotion.matches
+        : Math.sin(time / 310 + patron.idleOffset) * 0.7;
+      const tap = prefersReducedMotion.matches
         ? 0
-        : Math.round(
-            Math.max(0, Math.sin((time + patron.offset) / patron.tapCycle)) * 2,
-          );
-      const blinking = blinkProgress > 0.48 && blinkProgress < 0.56;
+        : Math.max(0, Math.sin(time / 230 + patron.tapOffset)) * 1.6;
+      const blinkPhase = prefersReducedMotion.matches
+        ? 0
+        : ((time / 1000 + patron.blinkOffset) % 3.8) / 3.8;
+      const blinking = blinkPhase > 0.49 && blinkPhase < 0.56;
+      const headShiftY = Math.round(idleBob - action.lean * 1.4);
+      const headX = patron.x - 5;
+      const headY = 12 + headShiftY;
+      const torsoY = 20 + headShiftY;
+      const shoulderX = patron.x + 4;
+      const shoulderY = torsoY + 3;
+      const handY = 28 + Math.round(tap);
 
-      const headX = patron.x - 6;
-      const headY = 26 + headOffsetY;
-      const torsoY = 36 + headOffsetY;
-      const mugRestX = patron.x + 10;
-      const mugRestY = 46;
-      const mugTargetX = patron.x + patron.mugTargetX;
-      const mugTargetY = patron.mugTargetY + headOffsetY;
-      const mugX = Math.round(lerp(mugRestX, mugTargetX, easedLift));
-      const mugY = Math.round(lerp(mugRestY, mugTargetY, easedLift));
-      const shoulderX = patron.x + 3;
-      const shoulderY = torsoY + 2;
+      drawStool(patron.x);
 
-      drawPixelRect(patron.x - 7, 74, 14, 2, "#452010");
-      drawPixelRect(patron.x - 5, 76, 2, 8, "#2e140a");
-      drawPixelRect(patron.x + 3, 76, 2, 8, "#2e140a");
+      px(headX, headY, 10, 7, patron.skin);
 
-      drawPixelRect(headX, headY, 12, 10, patron.skin);
-      drawPixelRect(headX, headY, 12, 2, patron.hair);
-      drawPixelRect(headX, headY + 2, 2, 4, patron.hair);
-      drawPixelRect(headX + 10, headY + 2, 2, 4, patron.hair);
-      drawPixelRect(headX + 3, headY + 7, 6, 1, "rgba(133, 76, 43, 0.55)");
-
-      if (!blinking) {
-        drawPixelRect(headX + 3, headY + 4, 1, 1, "#2b1208");
-        drawPixelRect(headX + 8, headY + 4, 1, 1, "#2b1208");
+      if (patron.cap) {
+        px(headX - 1, headY, 12, 2, patron.hair);
+        px(headX + 1, headY + 2, 9, 1, patron.hair);
       } else {
-        drawPixelRect(headX + 3, headY + 5, 1, 1, "#7d4d30");
-        drawPixelRect(headX + 8, headY + 5, 1, 1, "#7d4d30");
+        px(headX, headY, 10, 2, patron.hair);
+        px(headX, headY + 2, 2, 3, patron.hair);
+        px(headX + 8, headY + 2, 2, 3, patron.hair);
       }
 
-      drawPixelRect(headX + 5, headY + 5, 1, 1, "#c57b4b");
+      if (patron.beard) {
+        px(headX + 2, headY + 5, 6, 2, "#7b4a2c");
+      }
 
-      drawPixelRect(patron.x - 8, torsoY, 16, 10, patron.shirt);
-      drawPixelRect(patron.x - 8, torsoY + 8, 16, 2, patron.shirtShade);
-      drawPixelRect(patron.x - 4, torsoY + 1, 8, 2, "rgba(255, 255, 255, 0.08)");
+      if (patron.moustache) {
+        px(headX + 3, headY + 5, 4, 1, "#75411a");
+      }
 
-      drawPixelLine(patron.x - 2, torsoY + 2, patron.x - 13, 49 + tapping, patron.shirtShade, 2);
-      drawPixelRect(patron.x - 14, 48 + tapping, 3, 3, patron.skin);
+      if (!blinking) {
+        px(headX + 2, headY + 3, 1, 1, "#241108");
+        px(headX + 7, headY + 3, 1, 1, "#241108");
+      } else {
+        px(headX + 2, headY + 4, 1, 1, "#7f4d2e");
+        px(headX + 7, headY + 4, 1, 1, "#7f4d2e");
+      }
 
-      drawPixelLine(shoulderX, shoulderY, mugX + 1, mugY + 4, patron.shirtShade, 2);
-      drawPixelRect(mugX, mugY + 4, 3, 3, patron.skin);
+      px(headX + 4, headY + 4, 1, 1, "#cd8150");
 
-      drawBeerMug(mugX, mugY, time + patron.offset);
+      px(patron.x - 6, torsoY, 12, 6, patron.shirt);
+      px(patron.x - 6, torsoY + 5, 12, 2, patron.shirtShade);
+      px(patron.x - 2, torsoY + 1, 4, 1, "rgba(255, 255, 255, 0.08)");
 
-      drawPixelRect(patron.x - 6, 46, 2, 1, "#ffdc88");
-      drawPixelRect(patron.x + 6, 46, 2, 1, "#ffdc88");
+      line(patron.x - 2, torsoY + 3, patron.x - 11, handY, patron.shirtShade, 1);
+      px(patron.x - 12, handY, 2, 2, patron.skin);
+
+      line(shoulderX, shoulderY, action.mugX + 1, action.mugY + 4, patron.shirtShade, 1);
+      px(action.mugX + 1, action.mugY + 4, 2, 2, patron.skin);
+
+      drawBeerMug(action.mugX, action.mugY, time + index * 120, action.clink);
+    }
+
+    function drawSpark(centerX, centerY, time) {
+      const sparkleColor = prefersReducedMotion.matches
+        ? "#fff0a5"
+        : Math.sin(time / 120) > 0
+          ? "#fff8d1"
+          : "#ffd861";
+
+      px(centerX, centerY, 1, 1, sparkleColor);
+      px(centerX - 1, centerY, 1, 1, sparkleColor);
+      px(centerX + 1, centerY, 1, 1, sparkleColor);
+      px(centerX, centerY - 1, 1, 1, sparkleColor);
+      px(centerX, centerY + 1, 1, 1, sparkleColor);
     }
 
     function drawHeaderScene(time) {
-      drawBackdrop(time);
-      patrons.forEach((patron) => drawPatron(patron, time));
+      const progress = getSceneProgress(time);
+      const firstClink = segment(progress, 0.58, 0.64, 0.68, 0.75);
+      const secondClink = segment(progress, 0.79, 0.85, 0.89, 0.96);
+
+      drawBackWall(time);
+      patrons.forEach((patron, index) => drawPatron(patron, index, time, progress));
+
+      if (firstClink > 0.86) {
+        drawSpark(75, 17, time);
+      }
+
+      if (secondClink > 0.86) {
+        drawSpark(108, 17, time);
+      }
+
+      drawBarForeground();
     }
 
     function animateHeaderScene(time) {
@@ -576,9 +769,7 @@ if (headerPixelCanvas instanceof HTMLCanvasElement) {
 
     drawHeaderScene(0);
 
-    if (prefersReducedMotion.matches) {
-      drawHeaderScene(0);
-    } else {
+    if (!prefersReducedMotion.matches) {
       headerAnimationFrame = window.requestAnimationFrame(animateHeaderScene);
     }
 
@@ -607,6 +798,7 @@ const snakeStatus = document.querySelector("[data-snake-status]");
 const snakeToggle = document.querySelector("[data-snake-toggle]");
 const snakePromo = document.querySelector("[data-snake-promo]");
 const snakePromoClose = document.querySelector("[data-snake-promo-close]");
+const snakeBoard = snakeCanvas?.closest(".snake-board");
 
 if (snakeCanvas instanceof HTMLCanvasElement && snakeStatus instanceof HTMLElement) {
   const context = snakeCanvas.getContext("2d");
@@ -639,6 +831,11 @@ if (snakeCanvas instanceof HTMLCanvasElement && snakeStatus instanceof HTMLEleme
     let isPromoVisible = false;
     let promoUnlocked = false;
     let gameLoopId = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isSwipeTracking = false;
+    let isSwipeHandled = false;
+    const swipeThreshold = 24;
 
     function renderSnakeStatus(overrideMessage) {
       const message = overrideMessage ?? note;
@@ -909,6 +1106,45 @@ if (snakeCanvas instanceof HTMLCanvasElement && snakeStatus instanceof HTMLEleme
       }
     }
 
+    function queueDirection(key) {
+      if (!(key in directions)) {
+        return false;
+      }
+
+      const proposedDirection = directions[key];
+
+      if (
+        proposedDirection.x === -nextDirection.x &&
+        proposedDirection.y === -nextDirection.y
+      ) {
+        return false;
+      }
+
+      nextDirection = proposedDirection;
+      snakeCanvas.focus();
+      return true;
+    }
+
+    function resetSwipeTracking() {
+      isSwipeTracking = false;
+      isSwipeHandled = false;
+    }
+
+    function handleSwipeDirection(deltaX, deltaY) {
+      if (
+        Math.abs(deltaX) < swipeThreshold &&
+        Math.abs(deltaY) < swipeThreshold
+      ) {
+        return false;
+      }
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        return queueDirection(deltaX > 0 ? "ArrowRight" : "ArrowLeft");
+      }
+
+      return queueDirection(deltaY > 0 ? "ArrowDown" : "ArrowUp");
+    }
+
     if (snakeToggle instanceof HTMLButtonElement) {
       snakeToggle.addEventListener("click", () => {
         togglePause();
@@ -918,6 +1154,79 @@ if (snakeCanvas instanceof HTMLCanvasElement && snakeStatus instanceof HTMLEleme
     if (snakePromoClose instanceof HTMLButtonElement) {
       snakePromoClose.addEventListener("click", () => {
         hidePromo();
+      });
+    }
+
+    if (snakeBoard instanceof HTMLElement) {
+      snakeBoard.addEventListener("touchstart", (event) => {
+        if (isEditableTarget(event.target) || isPromoVisible) {
+          return;
+        }
+
+        const [touch] = event.changedTouches;
+
+        if (!touch) {
+          return;
+        }
+
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        isSwipeTracking = true;
+        isSwipeHandled = false;
+        snakeCanvas.focus();
+      });
+
+      snakeBoard.addEventListener(
+        "touchmove",
+        (event) => {
+          if (!isSwipeTracking || isPromoVisible) {
+            return;
+          }
+
+          const [touch] = event.changedTouches;
+
+          if (!touch) {
+            return;
+          }
+
+          const deltaX = touch.clientX - touchStartX;
+          const deltaY = touch.clientY - touchStartY;
+
+          if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
+            event.preventDefault();
+          }
+
+          if (isSwipeHandled) {
+            return;
+          }
+
+          if (handleSwipeDirection(deltaX, deltaY)) {
+            isSwipeHandled = true;
+          }
+        },
+        { passive: false },
+      );
+
+      snakeBoard.addEventListener("touchend", (event) => {
+        if (!isSwipeTracking || isPromoVisible) {
+          resetSwipeTracking();
+          return;
+        }
+
+        const [touch] = event.changedTouches;
+
+        if (touch && !isSwipeHandled) {
+          handleSwipeDirection(
+            touch.clientX - touchStartX,
+            touch.clientY - touchStartY,
+          );
+        }
+
+        resetSwipeTracking();
+      });
+
+      snakeBoard.addEventListener("touchcancel", () => {
+        resetSwipeTracking();
       });
     }
 
@@ -942,18 +1251,8 @@ if (snakeCanvas instanceof HTMLCanvasElement && snakeStatus instanceof HTMLEleme
         return;
       }
 
-      const proposedDirection = directions[event.key];
-
-      if (
-        proposedDirection.x === -nextDirection.x &&
-        proposedDirection.y === -nextDirection.y
-      ) {
-        return;
-      }
-
       event.preventDefault();
-      nextDirection = proposedDirection;
-      snakeCanvas.focus();
+      queueDirection(event.key);
     });
 
     resetGame("Нажмите стрелки и начните новый бокал.");
