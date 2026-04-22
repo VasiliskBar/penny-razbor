@@ -6,86 +6,70 @@ const app = document.querySelector("#app");
 const rows = 4;
 const columns = 5;
 const totalPieces = rows * columns;
-const leftTrayCount = 8;
-const bottomTrayCount = totalPieces - leftTrayCount;
 
 app.innerHTML = `
   <div class="puzzle-page">
-    <header class="puzzle-header">
-      <div class="puzzle-header-top">
+    <main class="puzzle-shell">
+      <aside class="puzzle-sidebar" aria-label="Панель игры">
         <a class="puzzle-back" href="/penny-razbor/">Вернуться на лендинг</a>
         <p class="puzzle-eyebrow">Морская игра для детей</p>
-      </div>
+        <h1>Мозайка моряка</h1>
+        <p class="puzzle-lead">
+          Собирайте картинку по кусочкам. Кнопки и подсказки всегда под рукой слева.
+        </p>
 
-      <div class="puzzle-header-grid">
-        <div class="puzzle-title-wrap">
-          <h1>Мозайка моряка</h1>
-          <p class="puzzle-lead">
-            Перетаскивайте детали на свои места, открывайте подсказку и собирайте
-            морскую картинку без спешки.
-          </p>
+        <div class="puzzle-controls" aria-label="Управление игрой">
+          <button class="puzzle-button puzzle-button-primary" type="button" data-start-button>
+            Старт
+          </button>
+          <button class="puzzle-button puzzle-button-secondary" type="button" data-restart-button>
+            Начать сначала
+          </button>
+          <button class="puzzle-button puzzle-button-ghost" type="button" data-hint-button>
+            Подсказка
+          </button>
         </div>
 
-        <div class="puzzle-header-side">
-          <div class="puzzle-controls" aria-label="Управление игрой">
-            <button class="puzzle-button puzzle-button-primary" type="button" data-start-button>
-              Старт
-            </button>
-            <button class="puzzle-button puzzle-button-secondary" type="button" data-restart-button>
-              Начать сначала
-            </button>
-            <button class="puzzle-button puzzle-button-ghost" type="button" data-hint-button>
-              Подсказка
-            </button>
-          </div>
-
-          <div class="puzzle-status-panel">
-            <p class="puzzle-status" data-status-text>Нажмите «Старт», чтобы начать морское приключение.</p>
-            <p class="puzzle-progress" data-progress-text>Собрано 0 из ${totalPieces}</p>
-          </div>
+        <div class="puzzle-status-panel">
+          <p class="puzzle-status" data-status-text>Нажмите «Старт», чтобы начать морское приключение.</p>
+          <p class="puzzle-progress" data-progress-text>Собрано 0 из ${totalPieces}</p>
         </div>
-      </div>
-    </header>
 
-    <main class="puzzle-main">
-      <section class="puzzle-layout" aria-label="Игровое поле">
-        <aside class="puzzle-tray puzzle-tray-left" data-tray-left>
-          <div class="puzzle-tray-heading">
-            <h2>Левая каюта</h2>
-            <p>Здесь лежит первая часть деталей.</p>
-          </div>
-          <div class="puzzle-tray-grid puzzle-tray-grid-left" data-left-grid></div>
-        </aside>
+        <p class="puzzle-touch-tip">
+          На телефоне тяните деталь пальцем и отпускайте рядом с её местом.
+        </p>
+      </aside>
 
-        <section class="puzzle-stage">
-          <div class="puzzle-board-shell">
-            <div class="puzzle-board-water"></div>
-            <div class="puzzle-board" data-board>
-              <div class="puzzle-board-grid" data-board-grid></div>
-              <div class="puzzle-start-overlay" data-start-overlay>
-                <div class="puzzle-start-card">
-                  <p class="puzzle-start-label">Поднять паруса</p>
-                  <h2>Пора собирать пазл!</h2>
-                  <p>
-                    Нажмите «Старт», а потом перетаскивайте детали в правильные
-                    клеточки. Если забыли картинку, откройте подсказку.
-                  </p>
-                </div>
+      <section class="puzzle-stage" aria-label="Зона сборки пазла">
+        <div class="puzzle-board-shell">
+          <div class="puzzle-board-water"></div>
+          <div class="puzzle-board" data-board>
+            <div class="puzzle-board-grid" data-board-grid></div>
+            <div class="puzzle-start-overlay" data-start-overlay>
+              <div class="puzzle-start-card">
+                <p class="puzzle-start-label">Поднять паруса</p>
+                <h2>Пора собирать пазл!</h2>
+                <p>
+                  Нажмите «Старт», а потом перетаскивайте детали в правильные клеточки.
+                  Если забыли картинку, откройте подсказку.
+                </p>
               </div>
             </div>
           </div>
-          <p class="puzzle-touch-tip">
-            На телефоне тяните деталь пальцем и отпускайте рядом с её местом.
-          </p>
-        </section>
-      </section>
-
-      <section class="puzzle-tray puzzle-tray-bottom" data-tray-bottom>
-        <div class="puzzle-tray-heading">
-          <h2>Нижняя палуба</h2>
-          <p>Остальные детали ждут здесь.</p>
         </div>
-        <div class="puzzle-tray-grid puzzle-tray-grid-bottom" data-bottom-grid></div>
+
+        <section class="puzzle-tray" aria-label="Выбор деталей">
+          <div class="puzzle-tray-head">
+            <div>
+              <p class="puzzle-tray-label">Лента деталей</p>
+              <h2>Прокручивайте и выбирайте кусочки</h2>
+            </div>
+            <p class="puzzle-tray-meta">Все детали лежат в одну строку.</p>
+          </div>
+          <div class="puzzle-tray-scroller" data-tray-scroller>
+            <div class="puzzle-tray-row" data-tray-row></div>
+          </div>
+        </section>
       </section>
     </main>
 
@@ -116,32 +100,6 @@ app.innerHTML = `
         </button>
       </div>
     </div>
-
-    <footer class="puzzle-footer" aria-label="Морской декор">
-      <div class="puzzle-footer-wave puzzle-footer-wave-back"></div>
-      <div class="puzzle-footer-wave puzzle-footer-wave-front"></div>
-
-      <div class="puzzle-footer-fish puzzle-footer-fish-left" aria-hidden="true">
-        <span class="puzzle-fish-body"></span>
-        <span class="puzzle-fish-tail"></span>
-      </div>
-
-      <div class="puzzle-footer-fish puzzle-footer-fish-right" aria-hidden="true">
-        <span class="puzzle-fish-body"></span>
-        <span class="puzzle-fish-tail"></span>
-      </div>
-
-      <div class="puzzle-crab" aria-hidden="true">
-        <span class="puzzle-crab-claw puzzle-crab-claw-left"></span>
-        <span class="puzzle-crab-claw puzzle-crab-claw-right"></span>
-        <span class="puzzle-crab-body">
-          <span class="puzzle-crab-eye puzzle-crab-eye-left"></span>
-          <span class="puzzle-crab-eye puzzle-crab-eye-right"></span>
-          <span class="puzzle-crab-smile"></span>
-        </span>
-        <span class="puzzle-crab-legs"></span>
-      </div>
-    </footer>
   </div>
 `;
 
@@ -155,8 +113,7 @@ const winRestartButtons = document.querySelectorAll("[data-win-restart]");
 const statusText = document.querySelector("[data-status-text]");
 const progressText = document.querySelector("[data-progress-text]");
 const boardGrid = document.querySelector("[data-board-grid]");
-const leftGrid = document.querySelector("[data-left-grid]");
-const bottomGrid = document.querySelector("[data-bottom-grid]");
+const trayRow = document.querySelector("[data-tray-row]");
 const startOverlay = document.querySelector("[data-start-overlay]");
 const confettiRoot = document.querySelector("[data-confetti]");
 const page = document.querySelector(".puzzle-page");
@@ -193,30 +150,21 @@ function updateProgress() {
 }
 
 function toggleHintModal(isVisible) {
-  if (!(hintModal instanceof HTMLElement)) {
-    return;
+  if (hintModal instanceof HTMLElement) {
+    hintModal.hidden = !isVisible;
   }
-
-  hintModal.hidden = !isVisible;
-  hintModal.classList.toggle("is-visible", isVisible);
 }
 
 function toggleWinModal(isVisible) {
-  if (!(winModal instanceof HTMLElement)) {
-    return;
+  if (winModal instanceof HTMLElement) {
+    winModal.hidden = !isVisible;
   }
-
-  winModal.hidden = !isVisible;
-  winModal.classList.toggle("is-visible", isVisible);
 }
 
 function toggleStartOverlay(isVisible) {
-  if (!(startOverlay instanceof HTMLElement)) {
-    return;
+  if (startOverlay instanceof HTMLElement) {
+    startOverlay.hidden = !isVisible;
   }
-
-  startOverlay.hidden = !isVisible;
-  startOverlay.classList.toggle("is-visible", isVisible);
 }
 
 function createConfetti() {
@@ -263,25 +211,23 @@ function buildBoard() {
   }
 }
 
-function buildTray(container, count, trayName) {
-  if (!(container instanceof HTMLElement)) {
+function buildTray() {
+  if (!(trayRow instanceof HTMLElement)) {
     return;
   }
 
-  container.innerHTML = "";
+  trayRow.innerHTML = "";
 
-  for (let index = 0; index < count; index += 1) {
+  for (let index = 0; index < totalPieces; index += 1) {
     const slot = document.createElement("div");
     slot.className = "puzzle-tray-slot";
-    slot.dataset.trayName = trayName;
     slot.dataset.traySlot = String(index);
-    container.append(slot);
+    trayRow.append(slot);
   }
 }
 
-function getTraySlot(zone, slotIndex) {
-  const selector = `[data-tray-name="${zone}"][data-tray-slot="${slotIndex}"]`;
-  return document.querySelector(selector);
+function getTraySlot(slotIndex) {
+  return document.querySelector(`[data-tray-slot="${slotIndex}"]`);
 }
 
 function resetPieceElement(piece) {
@@ -297,8 +243,7 @@ function resetPieceElement(piece) {
 }
 
 function sendPieceHome(piece) {
-  const homeSlot = getTraySlot(piece.homeZone, piece.homeSlot);
-
+  const homeSlot = getTraySlot(piece.homeSlot);
   piece.placed = false;
 
   if (homeSlot instanceof HTMLElement) {
@@ -349,16 +294,8 @@ function assignHomes() {
   shuffledIds.forEach((pieceId, position) => {
     const piece = pieces.find((item) => item.id === pieceId);
 
-    if (!piece) {
-      return;
-    }
-
-    if (position < leftTrayCount) {
-      piece.homeZone = "left";
+    if (piece) {
       piece.homeSlot = position;
-    } else {
-      piece.homeZone = "bottom";
-      piece.homeSlot = position - leftTrayCount;
     }
   });
 }
@@ -396,11 +333,9 @@ function restartGame() {
 }
 
 function showHint() {
-  if (!gameStarted) {
-    return;
+  if (gameStarted) {
+    toggleHintModal(true);
   }
-
-  toggleHintModal(true);
 }
 
 function handleDrop(piece, pointerX, pointerY) {
@@ -435,10 +370,8 @@ function stopDragging(pointerX, pointerY) {
   }
 
   const { piece } = dragState;
-
   dragState = null;
   document.body.classList.remove("puzzle-no-select");
-
   handleDrop(piece, pointerX, pointerY);
 }
 
@@ -450,7 +383,6 @@ function startDragging(event, piece) {
   event.preventDefault();
 
   const rect = piece.element.getBoundingClientRect();
-
   dragState = {
     piece,
     pointerOffsetX: event.clientX - rect.left,
@@ -524,8 +456,7 @@ function createPieces(image) {
       const piece = {
         id: index,
         correctIndex: index,
-        homeZone: index < leftTrayCount ? "left" : "bottom",
-        homeSlot: index < leftTrayCount ? index : index - leftTrayCount,
+        homeSlot: index,
         placed: false,
         element,
       };
@@ -547,8 +478,7 @@ function preloadImage(src) {
 
 async function init() {
   buildBoard();
-  buildTray(leftGrid, leftTrayCount, "left");
-  buildTray(bottomGrid, bottomTrayCount, "bottom");
+  buildTray();
   updateButtons();
   toggleStartOverlay(true);
 
@@ -569,17 +499,9 @@ async function init() {
   }
 }
 
-startButton?.addEventListener("click", () => {
-  beginGame();
-});
-
-restartButton?.addEventListener("click", () => {
-  restartGame();
-});
-
-hintButton?.addEventListener("click", () => {
-  showHint();
-});
+startButton?.addEventListener("click", beginGame);
+restartButton?.addEventListener("click", restartGame);
+hintButton?.addEventListener("click", showHint);
 
 hintCloseButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -588,9 +510,7 @@ hintCloseButtons.forEach((button) => {
 });
 
 winRestartButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    restartGame();
-  });
+  button.addEventListener("click", restartGame);
 });
 
 document.addEventListener("pointermove", (event) => {
@@ -601,17 +521,14 @@ document.addEventListener("pointermove", (event) => {
   event.preventDefault();
 
   const { piece, pointerOffsetX, pointerOffsetY } = dragState;
-
   piece.element.style.left = `${event.clientX - pointerOffsetX}px`;
   piece.element.style.top = `${event.clientY - pointerOffsetY}px`;
 });
 
 document.addEventListener("pointerup", (event) => {
-  if (!dragState) {
-    return;
+  if (dragState) {
+    stopDragging(event.clientX, event.clientY);
   }
-
-  stopDragging(event.clientX, event.clientY);
 });
 
 document.addEventListener("pointercancel", () => {
