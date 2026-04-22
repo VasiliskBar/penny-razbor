@@ -12,29 +12,38 @@ const bottomTrayCount = totalPieces - leftTrayCount;
 app.innerHTML = `
   <div class="puzzle-page">
     <header class="puzzle-header">
-      <a class="puzzle-back" href="/penny-razbor/">Вернуться на лендинг</a>
-      <div class="puzzle-title-wrap">
+      <div class="puzzle-header-top">
+        <a class="puzzle-back" href="/penny-razbor/">Вернуться на лендинг</a>
         <p class="puzzle-eyebrow">Морская игра для детей</p>
-        <h1>Мозайка моряка</h1>
-        <p class="puzzle-lead">
-          Перетаскивайте детали на свои места, собирайте картинку и ловите
-          праздничное поздравление в красно-сине-белом морском стиле.
-        </p>
       </div>
-      <div class="puzzle-controls" aria-label="Управление игрой">
-        <button class="puzzle-button puzzle-button-primary" type="button" data-start-button>
-          Старт
-        </button>
-        <button class="puzzle-button puzzle-button-secondary" type="button" data-restart-button>
-          Начать сначала
-        </button>
-        <button class="puzzle-button puzzle-button-ghost" type="button" data-hint-button>
-          Подсказка
-        </button>
-      </div>
-      <div class="puzzle-status-panel">
-        <p class="puzzle-status" data-status-text>Нажмите «Старт», чтобы начать морское приключение.</p>
-        <p class="puzzle-progress" data-progress-text>Собрано 0 из ${totalPieces}</p>
+
+      <div class="puzzle-header-grid">
+        <div class="puzzle-title-wrap">
+          <h1>Мозайка моряка</h1>
+          <p class="puzzle-lead">
+            Перетаскивайте детали на свои места, открывайте подсказку и собирайте
+            морскую картинку без спешки.
+          </p>
+        </div>
+
+        <div class="puzzle-header-side">
+          <div class="puzzle-controls" aria-label="Управление игрой">
+            <button class="puzzle-button puzzle-button-primary" type="button" data-start-button>
+              Старт
+            </button>
+            <button class="puzzle-button puzzle-button-secondary" type="button" data-restart-button>
+              Начать сначала
+            </button>
+            <button class="puzzle-button puzzle-button-ghost" type="button" data-hint-button>
+              Подсказка
+            </button>
+          </div>
+
+          <div class="puzzle-status-panel">
+            <p class="puzzle-status" data-status-text>Нажмите «Старт», чтобы начать морское приключение.</p>
+            <p class="puzzle-progress" data-progress-text>Собрано 0 из ${totalPieces}</p>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -82,7 +91,7 @@ app.innerHTML = `
 
     <div class="puzzle-modal" data-hint-modal hidden>
       <div class="puzzle-modal-backdrop" data-hint-close></div>
-      <div class="puzzle-modal-card" role="dialog" aria-labelledby="puzzleHintTitle">
+      <div class="puzzle-modal-card" role="dialog" aria-labelledby="puzzleHintTitle" aria-modal="true">
         <p class="puzzle-modal-label">Подсказка капитана</p>
         <h2 id="puzzleHintTitle">Вот как выглядит картинка</h2>
         <img src="${puzzleImage}" alt="Образец картинки для пазла" />
@@ -94,19 +103,45 @@ app.innerHTML = `
 
     <div class="puzzle-modal" data-win-modal hidden>
       <div class="puzzle-modal-backdrop" data-win-restart></div>
-      <div class="puzzle-modal-card puzzle-win-card" role="dialog" aria-labelledby="puzzleWinTitle">
+      <div class="puzzle-modal-card puzzle-win-card" role="dialog" aria-labelledby="puzzleWinTitle" aria-modal="true">
         <div class="puzzle-confetti" data-confetti></div>
         <p class="puzzle-modal-label">Ура!</p>
         <h2 id="puzzleWinTitle">Ты собрал всю мозайку!</h2>
         <p>
-          Морская команда гордится тобой. Картинка собрана правильно, можно
-          запускать ещё один весёлый раунд.
+          Морская команда гордится тобой. Картинка собрана правильно, можно запускать
+          ещё один весёлый раунд.
         </p>
         <button class="puzzle-button puzzle-button-primary" type="button" data-win-restart>
           Сыграть ещё раз
         </button>
       </div>
     </div>
+
+    <footer class="puzzle-footer" aria-label="Морской декор">
+      <div class="puzzle-footer-wave puzzle-footer-wave-back"></div>
+      <div class="puzzle-footer-wave puzzle-footer-wave-front"></div>
+
+      <div class="puzzle-footer-fish puzzle-footer-fish-left" aria-hidden="true">
+        <span class="puzzle-fish-body"></span>
+        <span class="puzzle-fish-tail"></span>
+      </div>
+
+      <div class="puzzle-footer-fish puzzle-footer-fish-right" aria-hidden="true">
+        <span class="puzzle-fish-body"></span>
+        <span class="puzzle-fish-tail"></span>
+      </div>
+
+      <div class="puzzle-crab" aria-hidden="true">
+        <span class="puzzle-crab-claw puzzle-crab-claw-left"></span>
+        <span class="puzzle-crab-claw puzzle-crab-claw-right"></span>
+        <span class="puzzle-crab-body">
+          <span class="puzzle-crab-eye puzzle-crab-eye-left"></span>
+          <span class="puzzle-crab-eye puzzle-crab-eye-right"></span>
+          <span class="puzzle-crab-smile"></span>
+        </span>
+        <span class="puzzle-crab-legs"></span>
+      </div>
+    </footer>
   </div>
 `;
 
@@ -173,6 +208,15 @@ function toggleWinModal(isVisible) {
 
   winModal.hidden = !isVisible;
   winModal.classList.toggle("is-visible", isVisible);
+}
+
+function toggleStartOverlay(isVisible) {
+  if (!(startOverlay instanceof HTMLElement)) {
+    return;
+  }
+
+  startOverlay.hidden = !isVisible;
+  startOverlay.classList.toggle("is-visible", isVisible);
 }
 
 function createConfetti() {
@@ -333,6 +377,7 @@ function beginGame() {
   gameWon = false;
   toggleWinModal(false);
   toggleHintModal(false);
+  toggleStartOverlay(false);
   assignHomes();
   resetBoardCells();
 
@@ -342,11 +387,6 @@ function beginGame() {
 
   updateProgress();
   updateButtons();
-
-  if (startOverlay instanceof HTMLElement) {
-    startOverlay.hidden = true;
-  }
-
   setStatus("Игра началась. Тяните детали в правильные клеточки.");
 }
 
@@ -376,7 +416,7 @@ function handleDrop(piece, pointerX, pointerY) {
   const centerY = rect.top + rect.height / 2;
   const deltaX = pointerX - centerX;
   const deltaY = pointerY - centerY;
-  const threshold = Math.max(rect.width, rect.height) * 0.7;
+  const threshold = Math.max(rect.width, rect.height) * 0.72;
 
   if (Math.hypot(deltaX, deltaY) <= threshold) {
     placePieceOnBoard(piece);
@@ -385,7 +425,7 @@ function handleDrop(piece, pointerX, pointerY) {
     checkWin();
   } else {
     sendPieceHome(piece);
-    setStatus("Почти! Попробуйте отпустить деталь ближе к её месту.");
+    setStatus("Почти! Отпустите деталь чуть ближе к её месту.");
   }
 }
 
@@ -510,6 +550,7 @@ async function init() {
   buildTray(leftGrid, leftTrayCount, "left");
   buildTray(bottomGrid, bottomTrayCount, "bottom");
   updateButtons();
+  toggleStartOverlay(true);
 
   if (startButton instanceof HTMLButtonElement) {
     startButton.disabled = true;
@@ -518,17 +559,13 @@ async function init() {
   try {
     const image = await preloadImage(puzzleImage);
     createPieces(image);
-  } catch (error) {
+  } catch {
     setStatus("Не удалось загрузить картинку для пазла.");
     return;
   }
 
   if (startButton instanceof HTMLButtonElement) {
     startButton.disabled = false;
-  }
-
-  if (startOverlay instanceof HTMLElement) {
-    startOverlay.hidden = false;
   }
 }
 
