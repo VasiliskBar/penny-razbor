@@ -1,5 +1,5 @@
 import "./puzzle.css";
-import puzzleImage from "./assets/puzzle-image.png";
+import puzzleImage from "./assets/puzzle-image.jpg";
 
 const app = document.querySelector("#app");
 

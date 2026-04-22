@@ -1,4 +1,4 @@
-import"./modulepreload-polyfill-wMinxHhO.js";var e=`/penny-razbor/assets/puzzle-image-5sT3BiRD.png`,t=document.querySelector(`#app`),n=4,r=5,i=n*r,a=8,o=i-a;t.innerHTML=`
+import"./modulepreload-polyfill-wMinxHhO.js";var e=`/penny-razbor/assets/puzzle-image-Cnr0P3bH.jpg`,t=document.querySelector(`#app`),n=4,r=5,i=n*r,a=8,o=i-a;t.innerHTML=`
   <div class="puzzle-page">
     <header class="puzzle-header">
       <a class="puzzle-back" href="/penny-razbor/">Вернуться на лендинг</a>
