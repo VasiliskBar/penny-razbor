@@ -35,6 +35,7 @@ app.innerHTML = `
         <a href="#styles">Стили</a>
         <a href="#guide">Подбор</a>
         <a href="#pairings">Сочетания</a>
+        <a href="/penny-razbor/puzzle.html">Мозайка</a>
         <a href="#contact">Контакты</a>
       </nav>
     </header>
@@ -270,6 +271,9 @@ app.innerHTML = `
             <button class="button button-secondary snake-toggle" type="button" data-snake-toggle>
               Пауза
             </button>
+            <a class="button button-primary snake-puzzle-link" href="/penny-razbor/puzzle.html">
+              Открыть мозайку
+            </a>
             <span class="snake-caption">Пробел или кнопка ставят игру на паузу</span>
           </div>
 
