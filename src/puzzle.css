@@ -31,6 +31,7 @@
 body {
   margin: 0;
   min-width: 320px;
+  overflow-x: hidden;
 }
 
 button,
@@ -51,19 +52,22 @@ a {
 
 #app {
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 .puzzle-page {
   min-height: 100vh;
-  padding: 18px 40px;
+  padding: 12px 40px;
+  overflow: hidden;
 }
 
 .puzzle-shell {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
   align-items: stretch;
-  min-height: calc(100vh - 36px);
+  height: calc(100vh - 24px);
+  max-width: 100%;
 }
 
 .puzzle-sidebar,
@@ -80,8 +84,10 @@ a {
 .puzzle-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 22px 20px;
+  gap: 12px;
+  min-height: 0;
+  padding: 18px 18px;
+  overflow: hidden;
 }
 
 .puzzle-back {
@@ -123,7 +129,7 @@ a {
 }
 
 .puzzle-sidebar h1 {
-  font-size: clamp(2rem, 3vw, 2.9rem);
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
   line-height: 0.94;
   color: var(--puzzle-blue-deep);
 }
@@ -131,16 +137,17 @@ a {
 .puzzle-lead {
   margin: -2px 0 0;
   color: var(--puzzle-muted);
-  line-height: 1.45;
+  font-size: 0.95rem;
+  line-height: 1.32;
 }
 
 .puzzle-controls {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .puzzle-button {
-  min-height: 46px;
+  min-height: 42px;
   padding: 0 16px;
   border: 0;
   border-radius: 999px;
@@ -182,7 +189,7 @@ a {
 }
 
 .puzzle-status-panel {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 252, 255, 0.86)),
@@ -206,25 +213,28 @@ a {
 
 .puzzle-touch-tip {
   margin: auto 0 0;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.82);
   color: var(--puzzle-blue-deep);
-  font-size: 0.92rem;
+  font-size: 0.86rem;
+  line-height: 1.28;
   font-weight: 700;
 }
 
 .puzzle-stage {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 14px;
+  grid-template-rows: minmax(0, 1fr) 154px;
+  gap: 12px;
   min-height: 0;
+  min-width: 0;
 }
 
 .puzzle-board-shell {
   position: relative;
   min-height: 0;
-  padding: 14px;
+  min-width: 0;
+  padding: 12px;
   overflow: hidden;
 }
 
@@ -252,7 +262,7 @@ a {
 .puzzle-board {
   position: relative;
   height: 100%;
-  min-height: calc(100vh - 210px);
+  min-height: 0;
   border-radius: 24px;
   overflow: hidden;
   background:
@@ -266,8 +276,8 @@ a {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  padding: 12px;
 }
 
 .puzzle-board-cell {
@@ -307,7 +317,7 @@ a {
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 16px;
   background: rgba(5, 44, 98, 0.38);
   backdrop-filter: blur(4px);
 }
@@ -319,7 +329,7 @@ a {
 .puzzle-start-card,
 .puzzle-modal-card {
   width: min(100%, 390px);
-  padding: 22px 18px;
+  padding: 20px 16px;
   border-radius: 24px;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.34);
@@ -339,12 +349,14 @@ a {
 .puzzle-start-card h2,
 .puzzle-modal-card h2 {
   margin: 8px 0 10px;
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-size: clamp(1.6rem, 2.5vw, 2.1rem);
   color: var(--puzzle-blue-deep);
 }
 
 .puzzle-tray {
-  padding: 14px;
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
 }
 
 .puzzle-tray-head {
@@ -352,24 +364,26 @@ a {
   justify-content: space-between;
   gap: 14px;
   align-items: end;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .puzzle-tray h2 {
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   color: var(--puzzle-blue-deep);
 }
 
 .puzzle-tray-meta {
   margin: 0;
   color: var(--puzzle-muted);
+  font-size: 0.88rem;
   white-space: nowrap;
 }
 
 .puzzle-tray-scroller {
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 6px;
+  max-width: 100%;
+  padding-bottom: 4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(11, 99, 206, 0.45) rgba(255, 255, 255, 0.34);
 }
@@ -389,6 +403,7 @@ a {
   grid-auto-columns: var(--tray-piece-width);
   gap: 10px;
   align-items: start;
+  width: max-content;
 }
 
 .puzzle-tray-slot {
@@ -512,6 +527,7 @@ a {
 
   .puzzle-shell {
     grid-template-columns: 1fr;
+    height: auto;
     min-height: auto;
   }
 
@@ -524,7 +540,7 @@ a {
   }
 
   .puzzle-board {
-    min-height: min(62vh, 700px);
+    min-height: min(58vh, 640px);
   }
 }
 
@@ -540,6 +556,7 @@ a {
 
   .puzzle-shell {
     gap: 12px;
+    height: auto;
     min-height: auto;
   }
 
