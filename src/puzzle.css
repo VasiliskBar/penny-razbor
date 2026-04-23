@@ -685,10 +685,16 @@ a {
   }
 
   .puzzle-tray-arrows {
-    display: none;
+    display: flex;
   }
 
   .puzzle-tray-scroller {
+    overflow-x: hidden;
     padding: 0 0 16px;
+  }
+
+  .puzzle-tray-arrow {
+    width: 38px;
+    height: 38px;
   }
 }
