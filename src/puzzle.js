@@ -64,7 +64,17 @@ app.innerHTML = `
               <p class="puzzle-tray-label">Лента деталей</p>
               <h2>Прокручивайте и выбирайте кусочки</h2>
             </div>
-            <p class="puzzle-tray-meta">Все детали лежат в одну строку.</p>
+            <div class="puzzle-tray-actions">
+              <p class="puzzle-tray-meta">Все детали лежат в одну строку.</p>
+              <div class="puzzle-tray-arrows" aria-label="Прокрутка ленты деталей">
+                <button class="puzzle-tray-arrow" type="button" data-tray-prev aria-label="Прокрутить влево">
+                  ←
+                </button>
+                <button class="puzzle-tray-arrow" type="button" data-tray-next aria-label="Прокрутить вправо">
+                  →
+                </button>
+              </div>
+            </div>
           </div>
           <div class="puzzle-tray-scroller" data-tray-scroller>
             <div class="puzzle-tray-row" data-tray-row></div>
@@ -115,6 +125,8 @@ const progressText = document.querySelector("[data-progress-text]");
 const boardGrid = document.querySelector("[data-board-grid]");
 const trayRow = document.querySelector("[data-tray-row]");
 const trayScroller = document.querySelector("[data-tray-scroller]");
+const trayPrevButton = document.querySelector("[data-tray-prev]");
+const trayNextButton = document.querySelector("[data-tray-next]");
 const startOverlay = document.querySelector("[data-start-overlay]");
 const confettiRoot = document.querySelector("[data-confetti]");
 const page = document.querySelector(".puzzle-page");
@@ -124,7 +136,6 @@ let slots = [];
 let gameStarted = false;
 let gameWon = false;
 let dragState = null;
-let scrollerDragState = null;
 
 function shuffle(items) {
   const copy = [...items];
@@ -454,48 +465,16 @@ function setupImageMetrics(image) {
   page.style.setProperty("--piece-ratio", `${pieceRatio}`);
 }
 
-function attachTrayScroller() {
+function scrollTray(direction) {
   if (!(trayScroller instanceof HTMLElement)) {
     return;
   }
 
-  trayScroller.addEventListener("pointerdown", (event) => {
-    if (event.target instanceof Element && event.target.closest(".puzzle-piece")) {
-      return;
-    }
-
-    scrollerDragState = {
-      startX: event.clientX,
-      startScrollLeft: trayScroller.scrollLeft,
-      pointerId: event.pointerId,
-    };
-
-    trayScroller.classList.add("is-dragging");
-    trayScroller.setPointerCapture(event.pointerId);
+  const scrollAmount = Math.max(trayScroller.clientWidth * 0.7, 260);
+  trayScroller.scrollBy({
+    left: direction * scrollAmount,
+    behavior: "smooth",
   });
-
-  trayScroller.addEventListener("pointermove", (event) => {
-    if (!scrollerDragState) {
-      return;
-    }
-
-    event.preventDefault();
-    trayScroller.scrollLeft =
-      scrollerDragState.startScrollLeft - (event.clientX - scrollerDragState.startX);
-  });
-
-  const stopScrollerDrag = () => {
-    if (!scrollerDragState) {
-      return;
-    }
-
-    trayScroller.classList.remove("is-dragging");
-    scrollerDragState = null;
-  };
-
-  trayScroller.addEventListener("pointerup", stopScrollerDrag);
-  trayScroller.addEventListener("pointercancel", stopScrollerDrag);
-  trayScroller.addEventListener("lostpointercapture", stopScrollerDrag);
 }
 
 function createPieces(image) {
@@ -562,11 +541,11 @@ async function init() {
   }
 }
 
-attachTrayScroller();
-
 startButton?.addEventListener("click", beginGame);
 restartButton?.addEventListener("click", restartGame);
 hintButton?.addEventListener("click", showHint);
+trayPrevButton?.addEventListener("click", () => scrollTray(-1));
+trayNextButton?.addEventListener("click", () => scrollTray(1));
 
 hintCloseButtons.forEach((button) => {
   button.addEventListener("click", () => {

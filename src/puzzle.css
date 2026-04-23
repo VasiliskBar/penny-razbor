@@ -376,6 +376,12 @@ a {
   margin-bottom: 8px;
 }
 
+.puzzle-tray-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .puzzle-tray h2 {
   font-size: 1.02rem;
   color: var(--puzzle-blue-deep);
@@ -393,14 +399,35 @@ a {
   overflow-y: hidden;
   max-width: 100%;
   padding-bottom: 4px;
-  cursor: grab;
-  user-select: none;
   scrollbar-width: thin;
   scrollbar-color: rgba(11, 99, 206, 0.45) rgba(255, 255, 255, 0.34);
 }
 
-.puzzle-tray-scroller.is-dragging {
-  cursor: grabbing;
+.puzzle-tray-arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.puzzle-tray-arrow {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(11, 99, 206, 0.12), rgba(63, 161, 255, 0.22));
+  color: var(--puzzle-blue-deep);
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.puzzle-tray-arrow:hover,
+.puzzle-tray-arrow:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px rgba(11, 99, 206, 0.16);
 }
 
 .puzzle-tray-scroller::-webkit-scrollbar {
@@ -638,6 +665,11 @@ a {
     margin-bottom: 10px;
   }
 
+  .puzzle-tray-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .puzzle-tray-meta {
     white-space: normal;
     font-size: 0.9rem;
@@ -645,5 +677,9 @@ a {
 
   .puzzle-touch-tip {
     font-size: 0.88rem;
+  }
+
+  .puzzle-tray-arrows {
+    display: none;
   }
 }
