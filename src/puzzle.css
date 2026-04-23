@@ -398,7 +398,7 @@ a {
   overflow-x: auto;
   overflow-y: hidden;
   max-width: 100%;
-  padding-bottom: 4px;
+  padding-bottom: 24px;
   scrollbar-width: thin;
   scrollbar-color: rgba(11, 99, 206, 0.45) rgba(255, 255, 255, 0.34);
 }
@@ -657,6 +657,7 @@ a {
 
   .puzzle-tray {
     padding: 12px;
+    margin-bottom: 40px;
   }
 
   .puzzle-tray-head {
