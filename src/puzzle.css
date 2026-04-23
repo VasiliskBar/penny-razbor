@@ -59,6 +59,8 @@ a {
   min-height: 100vh;
   padding: 12px 40px;
   overflow: hidden;
+  --board-aspect: 5 / 4;
+  --piece-ratio: 1.05;
 }
 
 .puzzle-shell {
@@ -232,6 +234,9 @@ a {
 
 .puzzle-board-shell {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 0;
   min-width: 0;
   padding: 12px;
@@ -261,8 +266,12 @@ a {
 
 .puzzle-board {
   position: relative;
+  width: auto;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   min-height: 0;
+  aspect-ratio: var(--board-aspect);
   border-radius: 24px;
   overflow: hidden;
   background:
@@ -384,8 +393,14 @@ a {
   overflow-y: hidden;
   max-width: 100%;
   padding-bottom: 4px;
+  cursor: grab;
+  user-select: none;
   scrollbar-width: thin;
   scrollbar-color: rgba(11, 99, 206, 0.45) rgba(255, 255, 255, 0.34);
+}
+
+.puzzle-tray-scroller.is-dragging {
+  cursor: grabbing;
 }
 
 .puzzle-tray-scroller::-webkit-scrollbar {
@@ -400,14 +415,14 @@ a {
 .puzzle-tray-row {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: var(--tray-piece-width);
+  grid-auto-columns: calc(var(--tray-piece-height) * var(--piece-ratio));
   gap: 10px;
   align-items: start;
   width: max-content;
 }
 
 .puzzle-tray-slot {
-  width: var(--tray-piece-width);
+  width: calc(var(--tray-piece-height) * var(--piece-ratio));
   height: var(--tray-piece-height);
   border-radius: 14px;
   border: 2px dashed rgba(11, 99, 206, 0.18);

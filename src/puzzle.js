@@ -114,6 +114,7 @@ const statusText = document.querySelector("[data-status-text]");
 const progressText = document.querySelector("[data-progress-text]");
 const boardGrid = document.querySelector("[data-board-grid]");
 const trayRow = document.querySelector("[data-tray-row]");
+const trayScroller = document.querySelector("[data-tray-scroller]");
 const startOverlay = document.querySelector("[data-start-overlay]");
 const confettiRoot = document.querySelector("[data-confetti]");
 const page = document.querySelector(".puzzle-page");
@@ -123,6 +124,7 @@ let slots = [];
 let gameStarted = false;
 let gameWon = false;
 let dragState = null;
+let scrollerDragState = null;
 
 function shuffle(items) {
   const copy = [...items];
@@ -409,8 +411,12 @@ function attachPieceEvents(piece) {
 
 function createPieceImage(image, row, column) {
   const sliceCanvas = document.createElement("canvas");
-  const pieceWidth = Math.floor(image.naturalWidth / columns);
-  const pieceHeight = Math.floor(image.naturalHeight / rows);
+  const sourceX = Math.round((column * image.naturalWidth) / columns);
+  const sourceY = Math.round((row * image.naturalHeight) / rows);
+  const nextSourceX = Math.round(((column + 1) * image.naturalWidth) / columns);
+  const nextSourceY = Math.round(((row + 1) * image.naturalHeight) / rows);
+  const pieceWidth = nextSourceX - sourceX;
+  const pieceHeight = nextSourceY - sourceY;
 
   sliceCanvas.width = pieceWidth;
   sliceCanvas.height = pieceHeight;
@@ -423,8 +429,8 @@ function createPieceImage(image, row, column) {
 
   sliceContext.drawImage(
     image,
-    column * pieceWidth,
-    row * pieceHeight,
+    sourceX,
+    sourceY,
     pieceWidth,
     pieceHeight,
     0,
@@ -434,6 +440,62 @@ function createPieceImage(image, row, column) {
   );
 
   return sliceCanvas.toDataURL("image/png");
+}
+
+function setupImageMetrics(image) {
+  if (!(page instanceof HTMLElement)) {
+    return;
+  }
+
+  const boardAspect = `${image.naturalWidth} / ${image.naturalHeight}`;
+  const pieceRatio = (image.naturalWidth * rows) / (image.naturalHeight * columns);
+
+  page.style.setProperty("--board-aspect", boardAspect);
+  page.style.setProperty("--piece-ratio", `${pieceRatio}`);
+}
+
+function attachTrayScroller() {
+  if (!(trayScroller instanceof HTMLElement)) {
+    return;
+  }
+
+  trayScroller.addEventListener("pointerdown", (event) => {
+    if (event.target instanceof Element && event.target.closest(".puzzle-piece")) {
+      return;
+    }
+
+    scrollerDragState = {
+      startX: event.clientX,
+      startScrollLeft: trayScroller.scrollLeft,
+      pointerId: event.pointerId,
+    };
+
+    trayScroller.classList.add("is-dragging");
+    trayScroller.setPointerCapture(event.pointerId);
+  });
+
+  trayScroller.addEventListener("pointermove", (event) => {
+    if (!scrollerDragState) {
+      return;
+    }
+
+    event.preventDefault();
+    trayScroller.scrollLeft =
+      scrollerDragState.startScrollLeft - (event.clientX - scrollerDragState.startX);
+  });
+
+  const stopScrollerDrag = () => {
+    if (!scrollerDragState) {
+      return;
+    }
+
+    trayScroller.classList.remove("is-dragging");
+    scrollerDragState = null;
+  };
+
+  trayScroller.addEventListener("pointerup", stopScrollerDrag);
+  trayScroller.addEventListener("pointercancel", stopScrollerDrag);
+  trayScroller.addEventListener("lostpointercapture", stopScrollerDrag);
 }
 
 function createPieces(image) {
@@ -488,6 +550,7 @@ async function init() {
 
   try {
     const image = await preloadImage(puzzleImage);
+    setupImageMetrics(image);
     createPieces(image);
   } catch {
     setStatus("Не удалось загрузить картинку для пазла.");
@@ -498,6 +561,8 @@ async function init() {
     startButton.disabled = false;
   }
 }
+
+attachTrayScroller();
 
 startButton?.addEventListener("click", beginGame);
 restartButton?.addEventListener("click", restartGame);
